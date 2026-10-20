@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>创建应用程序实例</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Vue 3:选项式 API vs 组合式 API 对比</h1>
+    <p>两个卡片功能完全相同：一个计数器、一个与计数器同步的输入框、一个计算属性（平方值）、一个侦听器（记录变化）、以及 created / mounted 生命周期钩子。</p>
+
+    <div class="wrap">
+        <div class="card">
+            <h3>组合式 API</h3>
+            <div id="app-composition">
+                <p>计数器：<strong>{{ count }}</strong></p>
+                <p>平方值（计算属性）：<strong>{{ squared }}</strong></p>
+                <p>输入框（与 count 同步）：</p>
+                <input v-model.number="count" type="number" />
+                <p>
+                    <button @click="increment">+1</button>
+                    <button @click="decrement">-1</button>
+                    <button @click="reset">重置</button>
+                </p>
+                <p>侦听日志：</p>
+                <div class="log">{{ watchLog || '（暂无变化）' }}</div>
+                <p>生命周期日志：</p>
+                <div class="log">{{ lifeLog || '（暂无）' }}</div>
+            </div>
+        </div>
+    </div>
+    <!-- 引入vue -->
+    <script src="vue.global.js"></script>
+    <script>
+        // ---------- 组合式 ----------
+        const compositionApp = createApp({
+            setup() {
+                // 响应式数据
+                const count = ref(0);
+                const watchLog = ref('');
+                const lifeLog = ref('');
+
+                // 计算属性
+                const squared = computed(() => count.value * count.value);
+
+                // 侦听器
+                watch(count, (newVal, oldVal) => {
+                    watchLog.value = `count 从 ${oldVal} 变为 ${newVal}`;
+                });
+
+                // 方法
+                const increment = () => { count.value++; };
+                const decrement = () => { count.value--; };
+                const reset = () => { count.value = 0; };
+
+                // 生命周期钩子（created 在 setup 中直接同步执行）
+                lifeLog.value = 'created:组件实例已创建(DOM 尚未挂载）\n';
+
+                onMounted(() => {
+                    lifeLog.value += 'mounted:组件已挂载到 DOM';
+                });
+
+                // 返回模板需要的所有内容
+                return {
+                    count,
+                    squared,
+                    watchLog,
+                    lifeLog,
+                    increment,
+                    decrement,
+                    reset
+                };
+            }
+        });
+        compositionApp.mount('#app-composition');
+    </script>
+</body>
+
+</html>
